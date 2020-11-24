@@ -43,7 +43,7 @@ data "template_file" "docker_compose" {
     cpu_alarm = var.cpu_alarm
     mem_alarm = var.mem_alarm
 
-
+    cortex_instance_endpoint = var.cortex_instance_endpoint
   }
 
 }

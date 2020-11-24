@@ -109,6 +109,31 @@ locals {
   eks_pod_config = yamldecode(data.template_file.eksconfig.rendered)["sample_app"]
 }
 
+resource "kubernetes_service_account" "aoc-role" {
+  metadata {
+    name = "aoc-role"
+    namespace = kubernetes_namespace.aoc_ns.metadata[0].name
+  }
+
+  automount_service_account_token = true
+}
+
+resource "kubernetes_cluster_role_binding" "aoc-role-binding" {
+  metadata {
+    name = "aoc-role-binding"
+  }
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = "cluster-admin"
+  }
+  subject {
+    kind      = "ServiceAccount"
+    name      = "aoc-role"
+    namespace = kubernetes_namespace.aoc_ns.metadata[0].name
+  }
+}
+
 # deploy aoc and sample app
 resource "kubernetes_deployment" "aoc_deployment" {
   metadata {
@@ -137,6 +162,7 @@ resource "kubernetes_deployment" "aoc_deployment" {
 
 
       spec {
+        service_account_name = "aoc-role"
         volume {
           name = "otel-config"
           config_map {
@@ -148,6 +174,13 @@ resource "kubernetes_deployment" "aoc_deployment" {
           name = "mocked-server-cert"
           config_map {
             name = kubernetes_config_map.mocked_server_cert.metadata[0].name
+          }
+        }
+
+        volume {
+          name = kubernetes_service_account.aoc-role.default_secret_name
+          secret {
+            secret_name = kubernetes_service_account.aoc-role.default_secret_name
           }
         }
 
@@ -172,11 +205,27 @@ resource "kubernetes_deployment" "aoc_deployment" {
           image_pull_policy = "Always"
           args = ["--config=/aoc/aoc-config.yml"]
 
+          env {
+            name = "SAMPLE_APP_HOST"
+            value = module.common.sample_app_listen_address_ip
+          }
+
+          env {
+            name = "SAMPLE_APP_PORT"
+            value = module.common.sample_app_listen_address_port
+          }
+
           resources {
             requests {
               cpu = "0.2"
               memory = "256Mi"
             }
+          }
+
+          volume_mount {
+            mount_path = "/var/run/secrets/kubernetes.io/serviceaccount"
+            name = kubernetes_service_account.aoc-role.default_secret_name
+            read_only = true
           }
 
           volume_mount {
@@ -197,7 +246,6 @@ resource "kubernetes_deployment" "aoc_deployment" {
           image_pull_policy = "Always"
           command = length(local.eks_pod_config["command"]) != 0 ? local.eks_pod_config["command"] : null
           args = length(local.eks_pod_config["args"]) != 0 ? local.eks_pod_config["args"] : null
-
 
           env {
             name = "OTEL_EXPORTER_OTLP_ENDPOINT"
@@ -303,6 +351,8 @@ module "validator" {
   metric_namespace = "${module.common.otel_service_namespace}/${module.common.otel_service_name}"
   sample_app_endpoint = "http://${kubernetes_service.sample_app_service.load_balancer_ingress.0.hostname}:${module.common.sample_app_lb_port}"
   mocked_server_validating_url = "http://${kubernetes_service.mocked_server_service.load_balancer_ingress.0.hostname}/check-data"
+
+  cortex_instance_endpoint = module.common.cortex_instance_endpoint
 
   aws_access_key_id = var.aws_access_key_id
   aws_secret_access_key = var.aws_secret_access_key

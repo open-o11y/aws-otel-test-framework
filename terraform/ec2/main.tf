@@ -211,7 +211,7 @@ data "template_file" "docker_compose" {
     udp_endpoint = "${aws_instance.aoc.private_ip}:${module.common.udp_port}"
 
     mocked_server_image = local.mocked_server_image
-    date_mode = var.soaking_data_mode
+    data_mode = var.soaking_data_mode
     rate = var.soaking_data_rate
     data_type = var.soaking_data_type
   }

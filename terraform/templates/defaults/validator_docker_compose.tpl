@@ -25,4 +25,5 @@ services:
       - "ecsTaskDefVersion=${ecs_taskdef_version}"
       - "--alarm-names=${cpu_alarm}"
       - "--alarm-names=${mem_alarm}"
+      - "--cortex-instance-endpoint=${cortex_instance_endpoint}"
 

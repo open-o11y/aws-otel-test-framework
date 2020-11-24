@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  validator:
+    build:
+      ../../validator
+    volumes:
+      - ~/.aws:/root/.aws
+    env_file:
+      - creds.env
+    command:
+      - "-c=prometheus-metric-validation.yml"
+      - "-t=1869d7bee789aa13"
+      - "--region=us-east-1"
+      - "--endpoint=http://a0ffca853f63f422bb65700c056d6032-789663869.us-east-1.elb.amazonaws.com:8080"
+      - "--mocked-server-validating-url=http://a78f7392b67c94366aa1fed09cea6c50-346408524.us-east-1.elb.amazonaws.com/check-data"
+      - "--metric-namespace=aws-otel/aws-otel-integ-test"
+      - "--ecs-context"
+      - "ecsClusterName="
+      - "--ecs-context"
+      - "ecsTaskArn="
+      - "--ecs-context"
+      - "ecsTaskDefFamily="
+      - "--ecs-context"
+      - "ecsTaskDefVersion="
+      - "--alarm-names="
+      - "--alarm-names="
+      - "--cortex-instance-endpoint=https://aps-workspaces-gamma.us-east-1.amazonaws.com/workspaces/ws-7cd45747-2381-4a2a-847f-fa61a3694a74"
+

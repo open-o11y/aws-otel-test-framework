@@ -64,10 +64,16 @@ public class App implements Callable<Integer> {
   private List<String> alarmNameList;
 
   @CommandLine.Option(
-      names = {"--mocked-server-validating-url"},
-      description = "mocked server validating url"
+          names = {"--mocked-server-validating-url"},
+          description = "mocked server validating url"
   )
   private String mockedServerValidatingUrl;
+
+  @CommandLine.Option(
+          names = {"--cortex-instance-endpoint"},
+          description = "cortex instance validating url"
+  )
+  private String cortexInstanceEndpoint;
 
   public static void main(String[] args) throws Exception {
     int exitCode = new CommandLine(new App()).execute(args);
@@ -83,6 +89,7 @@ public class App implements Callable<Integer> {
     context.setEcsContext(buildECSContext(ecsContexts));
     context.setAlarmNameList(alarmNameList);
     context.setMockedServerValidatingUrl(mockedServerValidatingUrl);
+    context.setCortexInstanceEndpoint(this.cortexInstanceEndpoint);
 
     log.info(context);
 

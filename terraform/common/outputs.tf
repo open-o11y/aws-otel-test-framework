@@ -105,3 +105,7 @@ output "sample_app_ecr_repo_name" {
 output "mocked_server_ecr_repo_name" {
   value = "otel-test/mocked-server"
 }
+
+output "cortex_instance_endpoint" {
+  value = "https://aps-workspaces-gamma.us-east-1.amazonaws.com/workspaces/ws-7cd45747-2381-4a2a-847f-fa61a3694a74"
+}

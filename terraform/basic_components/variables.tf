@@ -28,4 +28,3 @@ variable "mocked_endpoint" {
 
 variable "sample_app" {
 }
-

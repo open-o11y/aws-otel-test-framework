@@ -17,4 +17,8 @@ variable "eks_cluster_name" {
   default = "aoc-test-eks-ec2"
 }
 
+## TODO ADD THIS
+variable "sample_app_replicas" {
+  default = "1"
+}
 
